@@ -1,23 +1,23 @@
 #pragma once 
 
 #include <vector>
+#include <tuple>
 
+using Point = std::vector<double>;
 struct Cluster {
-    std::vector<double> mode;
-    std::vector<std::vector<double> > original_points;
-    std::vector<std::vector<double> > shifted_points;
+    std::vector<double> center;
+    std::vector<int> point_indexs;
 };
 
 class MeanShift {
 public:
-    typedef std::vector<double> Point;
 
     MeanShift() { set_kernel(NULL); }
     MeanShift(double (*_kernel_func)(double,double)) { set_kernel(kernel_func); }
     std::vector<Point> meanshift(const std::vector<Point> & points,
                                                 double kernel_bandwidth,
                                                 double EPSILON = 0.00001);
-    std::vector<Cluster> cluster(const std::vector<Point> &, double);
+    std::tuple<std::vector<Cluster>, std::vector<Point>> fit(const std::vector<Point> &, double);
 
 private:
     double (*kernel_func)(double,double);

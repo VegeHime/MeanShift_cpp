@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
 #include "MeanShift.h"
 
 using namespace std;
@@ -41,11 +42,11 @@ void print_points(vector<vector<double> > points){
 
 int main(int argc, char **argv)
 {
-    MeanShift *msp = new MeanShift();
+    auto msp = make_unique<MeanShift>();
     double kernel_bandwidth = 3;
 
     vector<vector<double> > points = load_points("test.csv");
-    vector<Cluster> clusters = msp->cluster(points, kernel_bandwidth);
+    auto [clusters, shifted_points] = msp->fit(points, kernel_bandwidth);
 
     FILE *fp = fopen("result.csv", "w");
     if(!fp){
@@ -58,14 +59,14 @@ int main(int argc, char **argv)
     printf("====================\n\n");
     for(int cluster = 0; cluster < clusters.size(); cluster++) {
       printf("Cluster %i:\n", cluster);
-      for(int point = 0; point < clusters[cluster].original_points.size(); point++){
-        for(int dim = 0; dim < clusters[cluster].original_points[point].size(); dim++) {
-          printf("%f ", clusters[cluster].original_points[point][dim]);
-          fprintf(fp, dim?",%f":"%f", clusters[cluster].original_points[point][dim]);
+      for(int point = 0; point < clusters[cluster].point_indexs.size(); point++){
+        for(int dim = 0; dim < points[clusters[cluster].point_indexs[point]].size(); dim++) {
+          printf("%f ", points[clusters[cluster].point_indexs[point]][dim]);
+          fprintf(fp, dim?",%f":"%f", points[clusters[cluster].point_indexs[point]][dim]);
         }
         printf(" -> ");
-        for(int dim = 0; dim < clusters[cluster].shifted_points[point].size(); dim++) {
-          printf("%f ", clusters[cluster].shifted_points[point][dim]);
+        for(int dim = 0; dim < shifted_points[clusters[cluster].point_indexs[point]].size(); dim++) {
+          printf("%f ", shifted_points[clusters[cluster].point_indexs[point]][dim]);
         }
         printf("\n");
         fprintf(fp, "\n");

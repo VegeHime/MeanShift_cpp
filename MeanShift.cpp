@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "MeanShift.h"
 
 using namespace std;
 
-#define CLUSTER_EPSILON 0.5
+constexpr auto CLUSTER_EPSILON = 0.5;
 
 double euclidean_distance(const vector<double> &point_a, const vector<double> &point_b){
     double total = 0;
@@ -62,7 +62,7 @@ void MeanShift::shift_point(const Point &point,
     }
 }
 
-std::vector<MeanShift::Point> MeanShift::meanshift(const std::vector<Point> &points,
+std::vector<Point> MeanShift::meanshift(const std::vector<Point> &points,
                                              double kernel_bandwidth,
                                              double EPSILON){
     const double EPSILON_SQR = EPSILON*EPSILON;
@@ -99,25 +99,24 @@ vector<Cluster> MeanShift::cluster(const std::vector<Point> &points,
 
         int c = 0;
         for (; c < clusters.size(); c++) {
-            if (euclidean_distance(shifted_points[i], clusters[c].mode) <= CLUSTER_EPSILON) {
+            if (euclidean_distance(shifted_points[i], clusters[c].center) <= CLUSTER_EPSILON) {
                 break;
             }
         }
 
         if (c == clusters.size()) {
             Cluster clus;
-            clus.mode = shifted_points[i];
+            clus.center = shifted_points[i];
             clusters.push_back(clus);
         }
 
-        clusters[c].original_points.push_back(points[i]);
-        clusters[c].shifted_points.push_back(shifted_points[i]);
+        clusters[c].point_indexs.push_back(i);
     }
 
     return clusters;
 }
 
-vector<Cluster> MeanShift::cluster(const std::vector<Point> &points, double kernel_bandwidth){
+std::tuple<std::vector<Cluster>, std::vector<Point>> MeanShift::fit(const std::vector<Point> &points, double kernel_bandwidth){
     vector<Point> shifted_points = meanshift(points, kernel_bandwidth);
-    return cluster(points, shifted_points);
+    return std::make_tuple(cluster(points, shifted_points),shifted_points);
 }
