@@ -16,7 +16,8 @@ To cluster a set of points, create a MeanShift object and call the `cluster` met
 vector<vector<double> > points = load_points("test_simple.csv");
 MeanShift *ms = new MeanShift(NULL);
 double kernel_bandwidth = 2;
-vector<vector<double> > shifted_points = ms->cluster(points, 2);
+auto [cluster,shifted_points] = ms->fit(points, 2);
+delete ms;
 ```
 
 ## Visualization for Linux
